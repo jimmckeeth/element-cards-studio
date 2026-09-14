@@ -118,6 +118,6 @@ js/app.js           state, controls, the periodic table picker, wiring
 test/run.mjs        dependency-free test suite
 ```
 
-## Licence
+## Licence & Copyright
 
-MIT — see [LICENSE](LICENSE).
+Copyright © 2026 by Jim McKeeth - [GNU Affero General Public License v3.0](LICENSE.md)

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#151a21"/>
+  <rect x="3.5" y="3.5" width="25" height="25" rx="5" fill="none" stroke="#5ba8f0" stroke-width="1.6"/>
+  <text x="16" y="23" text-anchor="middle" font-size="17" font-weight="700" fill="#eef4fb" font-family="system-ui, sans-serif">E</text>
+  <circle cx="8" cy="8" r="1.8" fill="#5ba8f0"/>
+</svg>

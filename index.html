@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Element Card Studio — design periodic table symbol cards</title>
+<meta name="description" content="Design and download chemically accurate periodic table element cards. Customise fonts, colour, layout and data, add Lewis dot, Bohr shell and orbital box diagrams, then export SVG, PNG or lossless WebP.">
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<a class="skip-link" href="#stage">Skip to the card</a>
+
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true" class="brand-mark">
+      <rect x="1.5" y="1.5" width="29" height="29" rx="7" fill="none" stroke="currentColor" stroke-width="2"/>
+      <text x="16" y="22" text-anchor="middle" font-size="16" font-weight="700" fill="currentColor" font-family="system-ui, sans-serif">E</text>
+      <circle cx="6.5" cy="6.5" r="2" fill="currentColor"/>
+    </svg>
+    <div>
+      <h1>Element Card Studio</h1>
+      <p class="tagline">Accurate periodic table cards, designed the way you want them</p>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button type="button" class="btn" id="btn-random" title="Apply a random element and style">Surprise me</button>
+    <button type="button" class="btn" id="btn-share" title="Copy a link that restores this exact design">Copy link</button>
+    <button type="button" class="btn" id="btn-reset">Reset</button>
+  </div>
+</header>
+
+<main class="app">
+  <aside class="panel" aria-label="Card settings">
+    <div id="controls" class="controls"></div>
+  </aside>
+
+  <section class="stage" id="stage">
+    <div class="stage-head">
+      <h2 id="stage-title">Carbon</h2>
+      <p id="stage-sub" class="muted"></p>
+    </div>
+
+    <div class="preview-frame" id="preview-frame">
+      <div id="preview" class="preview" role="img" aria-live="polite"></div>
+    </div>
+
+    <div class="export">
+      <div class="export-row">
+        <div class="field">
+          <label for="ex-format">Format</label>
+          <select id="ex-format">
+            <option value="svg">SVG — vector, editable</option>
+            <option value="png" selected>PNG — transparent, lossless</option>
+            <option value="webp">WebP — lossless</option>
+          </select>
+        </div>
+        <div class="field" id="ex-scale-field">
+          <label for="ex-scale">Resolution</label>
+          <select id="ex-scale">
+            <option value="1">1× — screen</option>
+            <option value="2" selected>2× — retina</option>
+            <option value="3">3×</option>
+            <option value="4">4× — print</option>
+            <option value="6">6×</option>
+            <option value="8">8× — poster</option>
+          </select>
+        </div>
+        <button type="button" class="btn btn-primary" id="btn-download">Download</button>
+      </div>
+      <div class="export-row export-opts">
+        <label class="check"><input type="checkbox" id="ex-transparent"> Transparent background</label>
+        <label class="check"><input type="checkbox" id="ex-embed" checked> Embed fonts in file</label>
+        <button type="button" class="btn btn-quiet" id="btn-copy-png">Copy image</button>
+        <button type="button" class="btn btn-quiet" id="btn-copy-svg">Copy SVG code</button>
+      </div>
+      <p class="export-note" id="ex-note"></p>
+    </div>
+  </section>
+</main>
+
+<section class="table-section">
+  <div class="table-head">
+    <div>
+      <h2>Periodic table</h2>
+      <p class="muted">Click an element to design its card. Shift-click to add it to the sheet selection.</p>
+    </div>
+    <div class="table-tools">
+      <input type="search" id="el-search" placeholder="Search name, symbol or number" aria-label="Search elements" autocomplete="off">
+      <span class="sel-count" id="sel-count"></span>
+      <button type="button" class="btn btn-quiet" id="btn-sel-clear">Clear selection</button>
+      <button type="button" class="btn" id="btn-sheet">Export sheet…</button>
+    </div>
+  </div>
+  <div class="ptable-scroll">
+    <div class="ptable" id="ptable"></div>
+  </div>
+  <div class="legend" id="legend"></div>
+</section>
+
+<dialog id="sheet-dialog" class="dialog">
+  <form method="dialog">
+    <h2>Export a contact sheet</h2>
+    <p class="muted">Every selected element is rendered with the current design and laid out on one canvas.</p>
+    <div class="dialog-grid">
+      <div class="field">
+        <label for="sheet-cols">Columns</label>
+        <input type="number" id="sheet-cols" min="1" max="18" value="6">
+      </div>
+      <div class="field">
+        <label for="sheet-gap">Gap (px)</label>
+        <input type="number" id="sheet-gap" min="0" max="120" value="18">
+      </div>
+      <div class="field">
+        <label for="sheet-format">Format</label>
+        <select id="sheet-format">
+          <option value="svg">SVG</option>
+          <option value="png" selected>PNG</option>
+          <option value="webp">WebP</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="sheet-scale">Resolution</label>
+        <select id="sheet-scale"><option value="1">1×</option><option value="2" selected>2×</option><option value="3">3×</option></select>
+      </div>
+    </div>
+    <p id="sheet-info" class="muted"></p>
+    <menu class="dialog-actions">
+      <button type="submit" value="cancel" class="btn btn-quiet">Cancel</button>
+      <button type="button" value="ok" class="btn btn-primary" id="btn-sheet-go">Download sheet</button>
+    </menu>
+  </form>
+</dialog>
+
+<footer class="foot">
+  <p>
+    Data follows IUPAC conventions. Atomic weights in brackets are the mass number of the most stable
+    known isotope; configurations for elements beyond Z&nbsp;103 are predicted rather than measured.
+  </p>
+  <p class="foot-links">
+    <a href="https://github.com/jimmckeeth/periodic-chemistry-symbols-">Source on GitHub</a>
+  </p>
+</footer>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

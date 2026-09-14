@@ -1,10 +1,10 @@
 # Element Card Studio
 
-A browser app for designing and downloading periodic-table element cards that are
-chemically accurate *and* worth putting on a wall. No build step, no dependencies —
-it is plain ES modules, so it deploys to GitHub Pages as-is.
+Generate,customize, and download periodic-table element cards that are
+chemically accurate *and* worth putting on a wall. Right from the browser. 
+No build step, no dependencies, so it deploys to GitHub Pages or runs locally.
 
-![Ten preset styles applied to ten elements](assets/presets.png)
+![Ten preset styles applied to ten elements](assets/presets.webp)
 
 ## What it does
 

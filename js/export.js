@@ -1,7 +1,7 @@
 /**
  * export.js — turning a rendered card into a downloadable file.
  *
- * Rasterising an SVG through an <img> deliberately does not fetch external
+ * Rasterizing an SVG through an <img> deliberately does not fetch external
  * resources, web fonts included. So before any PNG/WebP is produced the web
  * fonts in use are fetched, base64-encoded and inlined as @font-face rules.
  * Without this step every export would silently fall back to a system font.
@@ -93,7 +93,7 @@ export async function rasterize(svg, { scale = 2, width, height, background = nu
     img.decoding = 'sync';
     const loaded = new Promise((resolve, reject) => {
       img.onload = () => resolve();
-      img.onerror = () => reject(new Error('The card could not be rasterised.'));
+      img.onerror = () => reject(new Error('The card could not be rasterized.'));
     });
     img.src = url;
     await loaded;
@@ -198,7 +198,21 @@ export function ensurePreviewFonts(fontIds) {
   return document.fonts ? document.fonts.ready : Promise.resolve();
 }
 
-export function filenameFor(el, cfg, format) {
-  const bits = [String(el.z).padStart(3, '0'), el.sym.toLowerCase(), cfg.layout];
+function slugify(str) {
+  return String(str)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Build a download filename. `styleLabel` names the design in the filename —
+ * pass the active preset's name when one is selected, since "poster" (the
+ * layout id) says far less about a card than "neon-lab" does. Falls back to
+ * the layout id when no preset is active.
+ */
+export function filenameFor(el, cfg, format, styleLabel) {
+  const style = slugify(styleLabel || cfg.layout);
+  const bits = [String(el.z).padStart(3, '0'), el.sym.toLowerCase(), style];
   return `${bits.join('-')}.${format}`;
 }

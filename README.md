@@ -14,7 +14,7 @@ No build step, no dependencies, so it deploys to GitHub Pages or runs locally.
 |---|---|
 | **Layouts** | Classic tile, Modern, Study card, Poster, Data sheet, Diagram-first |
 | **Diagrams** | Lewis electron dot, Bohr shell, orbital box (full or valence-only) |
-| **Colour** | 9 palettes × 7 paper themes × 6 accent treatments; colour by category, block, state or a fixed colour |
+| **Color** | 9 palettes × 7 paper themes × 6 accent treatments; color by category, block, state or a fixed color |
 | **Type** | 20 typefaces, independent symbol and text fonts, weight, size, letter-spacing |
 | **Data** | 20 properties placed in four corner slots and a detail list, in the order you choose |
 | **Frame** | Size, aspect presets, padding, corner radius, border, drop shadow |
@@ -56,7 +56,7 @@ each other:
 ## Exports
 
 **SVG** is vector and editable. Text is positioned from measured glyph metrics rather
-than `dominant-baseline`, so it stays centred in Illustrator and Inkscape as well as in
+than `dominant-baseline`, so it stays centered in Illustrator and Inkscape as well as in
 a browser, and superscripts are real raised tspans instead of precomposed characters
 that a font might not carry.
 
@@ -67,7 +67,7 @@ Rather than take that on trust, each exported file's RIFF chunks are inspected: 
 result is a lossy `VP8 ` chunk instead of a lossless `VP8L` one — as may happen in other
 browsers — the app tells you and points you at PNG.
 
-Rasterising an SVG through an `<img>` deliberately does not fetch external resources,
+Rasterizing an SVG through an `<img>` deliberately does not fetch external resources,
 web fonts included, so before any PNG or WebP is produced the fonts in use are fetched,
 base64-encoded and inlined as `@font-face` rules. Without that step every raster export
 would silently fall back to a system font. Embedding is optional for SVG downloads,
@@ -110,14 +110,14 @@ css/style.css       application chrome (deliberately neutral so the cards stand 
 js/elements.js      the 118-element dataset
 js/chem.js          configuration parsing, shells, valence, Lewis, orbital filling
 js/diagrams.js      SVG generators for each diagram, in their own coordinate space
-js/theme.js         palettes, paper themes, fonts, layouts, presets, colour maths
+js/theme.js         palettes, paper themes, fonts, layouts, presets, color maths
 js/fields.js        every displayable property and its formatter
 js/render.js        card composition — six layouts over a shared geometry system
-js/export.js        font inlining, rasterising, WebP verification, downloads
+js/export.js        font inlining, rasterizing, WebP verification, downloads
 js/app.js           state, controls, the periodic table picker, wiring
 test/run.mjs        dependency-free test suite
 ```
 
-## Licence & Copyright
+## License & Copyright
 
 Copyright © 2026 by Jim McKeeth - [GNU Affero General Public License v3.0](LICENSE.md)

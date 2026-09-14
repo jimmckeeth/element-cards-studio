@@ -23,7 +23,7 @@ export function lewis(el, opts) {
   const dots = chem.lewisDots(el, { useExtended: extended });
   const r = 5;
   const gap = 7.5;      // half-separation between the two electrons of a pair
-  const dx = 40;        // horizontal stand-off from the symbol's centre
+  const dx = 40;        // horizontal stand-off from the symbol's center
   const dy = 36;        // vertical stand-off
 
   const circles = [];

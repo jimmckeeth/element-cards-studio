@@ -2,8 +2,8 @@
  * theme.js — the visual vocabulary of a card.
  *
  * A card's look is composed from four independent choices: a palette (which
- * colour a category maps to), a paper theme (background and ink), an accent
- * mode (how the category colour is applied), and a type pairing. Keeping them
+ * color a category maps to), a paper theme (background and ink), an accent
+ * mode (how the category color is applied), and a type pairing. Keeping them
  * orthogonal means a handful of options cover a very wide design space.
  */
 
@@ -56,7 +56,7 @@ export const PALETTES = {
 export const THEMES = {
   paper:      { name: 'Paper',     bg: '#FFFFFF', ink: '#15191F', muted: '#5C6672', rule: '#D9DEE5', dark: false },
   cream:      { name: 'Cream',     bg: '#FAF6EE', ink: '#2A2118', muted: '#6E6152', rule: '#E2D8C6', dark: false },
-  cool:       { name: 'Cool grey', bg: '#F2F5F8', ink: '#1A2029', muted: '#5A6672', rule: '#D3DAE3', dark: false },
+  cool:       { name: 'Cool gray', bg: '#F2F5F8', ink: '#1A2029', muted: '#5A6672', rule: '#D3DAE3', dark: false },
   slate:      { name: 'Slate',     bg: '#1B2027', ink: '#F0F3F7', muted: '#9AA6B4', rule: '#333C48', dark: true },
   midnight:   { name: 'Midnight',  bg: '#0C1220', ink: '#E3ECF9', muted: '#8FA1BC', rule: '#22304A', dark: true },
   blueprint:  { name: 'Blueprint', bg: '#0E3A5E', ink: '#DCEEFF', muted: '#8FBCE0', rule: '#2A5F8C', dark: true, grid: true },
@@ -76,13 +76,13 @@ export const COLOR_BY = {
   category: 'Element category',
   block:    'Orbital block (s/p/d/f)',
   phase:    'State at room temperature',
-  fixed:    'One fixed colour',
+  fixed:    'One fixed color',
 };
 
 const BLOCK_HUES = { s: 'alkali', p: 'nonmetal', d: 'transition', f: 'lanthanide' };
 const PHASE_HUES = { solid: 'transition', liquid: 'metalloid', gas: 'noble' };
 
-/** Resolve the accent colour for an element under the current settings. */
+/** Resolve the accent color for an element under the current settings. */
 export function accentFor(el, cfg) {
   if (cfg.colorBy === 'fixed') return cfg.fixedColor;
   const colors = PALETTES[cfg.palette].colors;
@@ -123,7 +123,7 @@ export const LAYOUTS = {
   modern:   { name: 'Modern',        blurb: 'Accent rule, generous whitespace, data set below the symbol.',   slots: 2, diagram: 'band' },
   study:    { name: 'Study card',    blurb: 'Symbol on the left, a diagram on the right, properties beneath.', slots: 2, diagram: 'panel' },
   poster:   { name: 'Poster',        blurb: 'Oversized symbol as the ground, name and facts layered over it.', slots: 2, diagram: 'watermark' },
-  data:     { name: 'Data sheet',    blurb: 'Compact header with a labelled table of every selected property.', slots: 2, diagram: 'panel' },
+  data:     { name: 'Data sheet',    blurb: 'Compact header with a labeled table of every selected property.', slots: 2, diagram: 'panel' },
   diagram:  { name: 'Diagram first', blurb: 'The chosen diagram fills the card; the symbol becomes a caption.', slots: 2, diagram: 'hero' },
 };
 

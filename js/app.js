@@ -21,8 +21,29 @@ const $ = (sel) => document.querySelector(sel);
 let config = { ...DEFAULT_CONFIG };
 let selection = new Set();
 let renderQueued = false;
+// The id of the last preset applied, used only to name downloaded files
+// ("neon-lab" says far more than the layout id "poster"). Cleared on reset.
+let activePreset = null;
 
 /* ------------------------------------------------------------------ state */
+
+/**
+ * Apply a preset as a full style reset rather than a merge onto whatever was
+ * configured before. Without this, a setting no preset mentions — a corner
+ * field, letter-spacing, the temperature unit — would silently survive from
+ * an earlier preset or manual tweak, so two people picking the same preset
+ * from different starting points could get different-looking cards.
+ */
+function applyPreset(presetCfg, overrides = {}) {
+  return sanitize({
+    ...DEFAULT_CONFIG,
+    element: config.element,
+    width: config.width,
+    height: config.height,
+    ...presetCfg,
+    ...overrides,
+  });
+}
 
 function currentElement() {
   return BY_Z[config.element] ?? BY_Z[6];
@@ -110,8 +131,8 @@ function field(labelText, control, hint) {
   ]);
 }
 
-function select(key, options, onChange) {
-  const node = el('select', { id: `ctl-${key}` });
+function select(key, options, onChange, { disabled = false } = {}) {
+  const node = el('select', { id: `ctl-${key}`, disabled });
   for (const [value, label] of options) {
     node.append(el('option', { value, text: label, selected: String(config[key]) === String(value) }));
   }
@@ -142,13 +163,15 @@ const rangeLabels = {
   diagramScale: 'Diagram size', symbolWeight: 'Symbol weight',
 };
 
-function toggle(key, labelText) {
-  const input = el('input', { type: 'checkbox', checked: config[key] });
+function toggle(key, labelText, { disabled = false } = {}) {
+  const input = el('input', { type: 'checkbox', checked: config[key], disabled });
   input.addEventListener('change', () => {
     config[key] = input.checked;
     update();
   });
-  return el('label', { class: 'check' }, [input, document.createTextNode(' ' + labelText)]);
+  const label = el('label', { class: 'check' }, [input, document.createTextNode(' ' + labelText)]);
+  if (disabled) label.classList.add('check-disabled');
+  return label;
 }
 
 function group(title, open, body) {
@@ -164,7 +187,8 @@ function presetChips() {
     wrap.append(el('button', {
       type: 'button', class: 'chip', text: preset.name,
       onclick: () => {
-        config = sanitize({ ...config, ...preset.cfg });
+        config = applyPreset(preset.cfg);
+        activePreset = id;
         buildControls();
         update();
       },
@@ -234,8 +258,8 @@ function buildControls() {
 
   host.append(group('Layout & size', true, [
     field('Layout', select('layout', Object.entries(LAYOUTS).map(([id, l]) => [id, l.name]), () => {
+      buildControls();   // corner-data controls only apply to some layouts
       update();
-      $('#layout-blurb').textContent = LAYOUTS[config.layout].blurb;
     })),
     el('p', { class: 'field-hint', id: 'layout-blurb', text: LAYOUTS[config.layout].blurb }),
     el('div', { class: 'chips' }, [
@@ -257,9 +281,9 @@ function buildControls() {
     range('radius', { min: 0, max: 120, format: (v) => `${v} px` }),
   ]));
 
-  host.append(group('Colour', true, [
-    field('Colour by', select('colorBy', Object.entries(COLOR_BY), () => {
-      buildControls();   // the fixed-colour picker appears or disappears
+  host.append(group('Color', true, [
+    field('Color by', select('colorBy', Object.entries(COLOR_BY), () => {
+      buildControls();   // the fixed-color picker appears or disappears
       update();
     })),
     (() => {
@@ -274,7 +298,7 @@ function buildControls() {
             config.fixedColor = input.value;
             update();
           });
-          return field('Card colour', input);
+          return field('Card color', input);
         })()
       : null,
     field('Paper', select('theme', Object.entries(THEMES).map(([id, t]) => [id, t.name]))),
@@ -299,16 +323,27 @@ function buildControls() {
     el('p', { class: 'order-note', id: 'diagram-note' }),
   ]));
 
+  // Corner data (the four small labels in the tile's corners) is only ever
+  // drawn by the Classic tile layout — the controls are disabled elsewhere
+  // rather than left live with no visible effect.
+  const cornersApply = config.layout === 'classic';
+  const cornersLabel = cornersApply
+    ? 'Show corner data'
+    : `Show corner data (${LAYOUTS.classic.name} layout only)`;
+
   host.append(group('Content', false, [
     toggle('showName', 'Show the element name'),
-    toggle('showCorners', 'Show corner data (Classic layout)'),
+    toggle('showCorners', cornersLabel, { disabled: !cornersApply }),
+    !cornersApply
+      ? el('p', { class: 'field-hint', text: `Switch the layout to "${LAYOUTS.classic.name}" to place data in the corners.` })
+      : null,
     el('div', { class: 'row-2' }, [
-      field('Top left', select('cornerTopLeft', cornerOptions())),
-      field('Top right', select('cornerTopRight', cornerOptions())),
+      field('Top left', select('cornerTopLeft', cornerOptions(), null, { disabled: !cornersApply })),
+      field('Top right', select('cornerTopRight', cornerOptions(), null, { disabled: !cornersApply })),
     ]),
     el('div', { class: 'row-2' }, [
-      field('Bottom left', select('cornerBottomLeft', cornerOptions())),
-      field('Bottom right', select('cornerBottomRight', cornerOptions())),
+      field('Bottom left', select('cornerBottomLeft', cornerOptions(), null, { disabled: !cornersApply })),
+      field('Bottom right', select('cornerBottomRight', cornerOptions(), null, { disabled: !cornersApply })),
     ]),
     field('Temperature unit', select('tempUnit', [['K', 'Kelvin'], ['C', 'Celsius'], ['F', 'Fahrenheit']])),
     el('div', { class: 'field' }, [
@@ -320,7 +355,7 @@ function buildControls() {
 
   host.append(group('Frame', false, [
     range('borderWidth', { min: 0, max: 16, format: (v) => `${v} px` }),
-    field('Border colour', select('borderStyle', [['accent', 'Element colour'], ['ink', 'Text colour'], ['rule', 'Hairline'], ['none', 'No border']])),
+    field('Border color', select('borderStyle', [['accent', 'Element color'], ['ink', 'Text color'], ['rule', 'Hairline'], ['none', 'No border']])),
     toggle('shadow', 'Drop shadow'),
   ]));
 
@@ -395,7 +430,7 @@ function refreshTableState() {
   $('#btn-sel-clear').disabled = n === 0;
 }
 
-function recolourTable() {
+function recolorTable() {
   const cells = $('#ptable')?._cells;
   if (!cells) return;
   for (const [z, node] of cells) {
@@ -497,7 +532,7 @@ function draw() {
     note.textContent = messages[config.diagram] ?? '';
   }
 
-  recolourTable();
+  recolorTable();
   refreshTableState();
   buildLegend();
   history.replaceState(null, '', `#d=${encodeConfig(config)}`);
@@ -518,7 +553,7 @@ function toast(message, isError = false) {
 /* ----------------------------------------------------------------- exports */
 
 /**
- * Prepare the SVG for export. Rasterising always needs embedded fonts, since
+ * Prepare the SVG for export. Rasterizing always needs embedded fonts, since
  * an <img> will not fetch a web font; for SVG downloads it is the user's call.
  */
 async function exportSvgString(svg, format, embedRequested) {
@@ -574,7 +609,7 @@ function wireExport() {
       scale: Number($('#ex-scale').value),
       background: $('#ex-transparent').checked ? null : '#ffffff',
     });
-    const name = exporter.filenameFor(currentElement(), config, format);
+    const name = exporter.filenameFor(currentElement(), config, format, activePreset && PRESETS[activePreset].name);
     exporter.download(blob, name);
     if (format === 'webp' && !(await exporter.isLosslessWebp(blob))) {
       toast(`Downloaded ${name} — but this browser encoded it lossily. Use PNG for a lossless raster.`, true);
@@ -635,7 +670,8 @@ function wireSheet() {
       scale: Number($('#sheet-scale').value),
       background: $('#ex-transparent').checked ? null : '#ffffff',
     });
-    exporter.download(blob, `element-sheet-${elements.length}.${format}`);
+    const styleBit = activePreset ? `-${activePreset}` : '';
+    exporter.download(blob, `element-sheet${styleBit}-${elements.length}.${format}`);
     dialog.close();
     toast(`Downloaded a sheet of ${elements.length} cards`);
   }));
@@ -648,6 +684,7 @@ function wireSheet() {
 function wireTopbar() {
   $('#btn-reset').addEventListener('click', () => {
     config = { ...DEFAULT_CONFIG };
+    activePreset = null;
     buildControls();
     update();
     toast('Reset to defaults');
@@ -668,12 +705,13 @@ function wireTopbar() {
       const keys = Object.keys(obj);
       return keys[Math.floor(Math.random() * keys.length)];
     };
-    const preset = PRESETS[pick(PRESETS)];
-    config = sanitize({
-      ...config, ...preset.cfg,
+    const presetId = pick(PRESETS);
+    const preset = PRESETS[presetId];
+    config = applyPreset(preset.cfg, {
       element: 1 + Math.floor(Math.random() * 118),
       palette: pick(PALETTES),
     });
+    activePreset = presetId;
     buildControls();
     update();
     toast(`${preset.name} · ${elementName(currentElement(), config)}`);

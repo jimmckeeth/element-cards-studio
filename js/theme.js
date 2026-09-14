@@ -243,11 +243,11 @@ export const PRESETS = {
   chalkboard: { name: 'Chalkboard', cfg: {
     layout: 'classic', theme: 'carbon', accentMode: 'tint', palette: 'pastel',
     displayFont: 'archivo', bodyFont: 'worksans', symbolWeight: 400, diagram: 'orbitalValence',
-    fields: ['shells'], showCorners: false, radius: 14, borderWidth: 0, borderStyle: 'none', shadow: false } },
+    fields: ['shells'], radius: 14, borderWidth: 0, borderStyle: 'none', shadow: false } },
   minimal: { name: 'Minimal', cfg: {
     layout: 'classic', theme: 'paper', accentMode: 'none', palette: 'mono',
     displayFont: 'inter', bodyFont: 'inter', symbolWeight: 300, diagram: 'none',
-    fields: [], showCorners: false,
+    fields: [], cornerBottomLeft: 'none', cornerBottomRight: 'none',
     radius: 12, borderWidth: 1, borderStyle: 'rule', shadow: false } },
   atlas: { name: 'Atlas', cfg: {
     layout: 'study', theme: 'cool', accentMode: 'tint', palette: 'spectrum',

@@ -5,7 +5,7 @@
  * built from, so a PNG can never drift from what was on screen.
  *
  * Text is positioned from real glyph metrics (via an injected measurer backed
- * by a canvas) rather than `dominant-baseline`, which keeps the output centred
+ * by a canvas) rather than `dominant-baseline`, which keeps the output centered
  * identically in browsers, Illustrator and Inkscape.
  */
 
@@ -158,7 +158,7 @@ export function paletteFor(el, cfg) {
 /* ------------------------------------------------------------- utilities -- */
 
 /**
- * Lay a set of blocks out vertically, centred in `region`.
+ * Lay a set of blocks out vertically, centered in `region`.
  * Each block is `{ h, draw(y) }`; `draw` receives the block's top edge.
  */
 function stack(region, blocks, gap) {
@@ -453,7 +453,7 @@ LAYOUT_FNS.poster = (ctx) => {
   return parts.join('');
 };
 
-/** Data sheet: a tight header over a labelled property table. */
+/** Data sheet: a tight header over a labeled property table. */
 LAYOUT_FNS.data = (ctx) => {
   const { el, cfg, pal, fonts, box } = ctx;
   const parts = [];

@@ -27,6 +27,24 @@ let activePreset = null;
 
 /* ------------------------------------------------------------------ state */
 
+/**
+ * Apply a preset as a full style reset rather than a merge onto whatever was
+ * configured before. Without this, a setting no preset mentions — a corner
+ * field, letter-spacing, the temperature unit — would silently survive from
+ * an earlier preset or manual tweak, so two people picking the same preset
+ * from different starting points could get different-looking cards.
+ */
+function applyPreset(presetCfg, overrides = {}) {
+  return sanitize({
+    ...DEFAULT_CONFIG,
+    element: config.element,
+    width: config.width,
+    height: config.height,
+    ...presetCfg,
+    ...overrides,
+  });
+}
+
 function currentElement() {
   return BY_Z[config.element] ?? BY_Z[6];
 }
@@ -169,7 +187,7 @@ function presetChips() {
     wrap.append(el('button', {
       type: 'button', class: 'chip', text: preset.name,
       onclick: () => {
-        config = sanitize({ ...config, ...preset.cfg });
+        config = applyPreset(preset.cfg);
         activePreset = id;
         buildControls();
         update();
@@ -535,7 +553,7 @@ function toast(message, isError = false) {
 /* ----------------------------------------------------------------- exports */
 
 /**
- * Prepare the SVG for export. Rasterising always needs embedded fonts, since
+ * Prepare the SVG for export. Rasterizing always needs embedded fonts, since
  * an <img> will not fetch a web font; for SVG downloads it is the user's call.
  */
 async function exportSvgString(svg, format, embedRequested) {
@@ -689,8 +707,7 @@ function wireTopbar() {
     };
     const presetId = pick(PRESETS);
     const preset = PRESETS[presetId];
-    config = sanitize({
-      ...config, ...preset.cfg,
+    config = applyPreset(preset.cfg, {
       element: 1 + Math.floor(Math.random() * 118),
       palette: pick(PALETTES),
     });

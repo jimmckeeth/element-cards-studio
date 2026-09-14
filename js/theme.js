@@ -2,8 +2,8 @@
  * theme.js — the visual vocabulary of a card.
  *
  * A card's look is composed from four independent choices: a palette (which
- * colour a category maps to), a paper theme (background and ink), an accent
- * mode (how the category colour is applied), and a type pairing. Keeping them
+ * color a category maps to), a paper theme (background and ink), an accent
+ * mode (how the category color is applied), and a type pairing. Keeping them
  * orthogonal means a handful of options cover a very wide design space.
  */
 
@@ -76,13 +76,13 @@ export const COLOR_BY = {
   category: 'Element category',
   block:    'Orbital block (s/p/d/f)',
   phase:    'State at room temperature',
-  fixed:    'One fixed colour',
+  fixed:    'One fixed color',
 };
 
 const BLOCK_HUES = { s: 'alkali', p: 'nonmetal', d: 'transition', f: 'lanthanide' };
 const PHASE_HUES = { solid: 'transition', liquid: 'metalloid', gas: 'noble' };
 
-/** Resolve the accent colour for an element under the current settings. */
+/** Resolve the accent color for an element under the current settings. */
 export function accentFor(el, cfg) {
   if (cfg.colorBy === 'fixed') return cfg.fixedColor;
   const colors = PALETTES[cfg.palette].colors;

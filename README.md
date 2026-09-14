@@ -14,7 +14,7 @@ No build step, no dependencies, so it deploys to GitHub Pages or runs locally.
 |---|---|
 | **Layouts** | Classic tile, Modern, Study card, Poster, Data sheet, Diagram-first |
 | **Diagrams** | Lewis electron dot, Bohr shell, orbital box (full or valence-only) |
-| **Colour** | 9 palettes × 7 paper themes × 6 accent treatments; colour by category, block, state or a fixed colour |
+| **Color** | 9 palettes × 7 paper themes × 6 accent treatments; color by category, block, state or a fixed color |
 | **Type** | 20 typefaces, independent symbol and text fonts, weight, size, letter-spacing |
 | **Data** | 20 properties placed in four corner slots and a detail list, in the order you choose |
 | **Frame** | Size, aspect presets, padding, corner radius, border, drop shadow |
@@ -110,7 +110,7 @@ css/style.css       application chrome (deliberately neutral so the cards stand 
 js/elements.js      the 118-element dataset
 js/chem.js          configuration parsing, shells, valence, Lewis, orbital filling
 js/diagrams.js      SVG generators for each diagram, in their own coordinate space
-js/theme.js         palettes, paper themes, fonts, layouts, presets, colour maths
+js/theme.js         palettes, paper themes, fonts, layouts, presets, color maths
 js/fields.js        every displayable property and its formatter
 js/render.js        card composition — six layouts over a shared geometry system
 js/export.js        font inlining, rasterising, WebP verification, downloads

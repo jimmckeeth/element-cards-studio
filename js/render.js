@@ -121,7 +121,7 @@ function ensureContrast(color, bg, min = 3.2) {
 }
 
 /**
- * Resolve every colour the layouts draw with from the element plus settings.
+ * Resolve every color the layouts draw with from the element plus settings.
  */
 export function paletteFor(el, cfg) {
   const theme = THEMES[cfg.theme];

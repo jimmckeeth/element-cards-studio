@@ -198,7 +198,21 @@ export function ensurePreviewFonts(fontIds) {
   return document.fonts ? document.fonts.ready : Promise.resolve();
 }
 
-export function filenameFor(el, cfg, format) {
-  const bits = [String(el.z).padStart(3, '0'), el.sym.toLowerCase(), cfg.layout];
+function slugify(str) {
+  return String(str)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+/**
+ * Build a download filename. `styleLabel` names the design in the filename —
+ * pass the active preset's name when one is selected, since "poster" (the
+ * layout id) says far less about a card than "neon-lab" does. Falls back to
+ * the layout id when no preset is active.
+ */
+export function filenameFor(el, cfg, format, styleLabel) {
+  const style = slugify(styleLabel || cfg.layout);
+  const bits = [String(el.z).padStart(3, '0'), el.sym.toLowerCase(), style];
   return `${bits.join('-')}.${format}`;
 }

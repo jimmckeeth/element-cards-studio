@@ -54,7 +54,7 @@
           <label for="ex-format">Format</label>
           <select id="ex-format">
             <option value="svg">SVG — vector, editable</option>
-            <option value="png" selected>PNG — transparent, lossless</option>
+            <option value="png" selected>PNG — lossless</option>
             <option value="webp">WebP — lossless</option>
           </select>
         </div>
@@ -72,7 +72,7 @@
         <button type="button" class="btn btn-primary" id="btn-download">Download</button>
       </div>
       <div class="export-row export-opts">
-        <label class="check"><input type="checkbox" id="ex-transparent"> Transparent background</label>
+        <label class="check"><input type="checkbox" id="ex-transparent" checked> Transparent background</label>
         <label class="check"><input type="checkbox" id="ex-embed" checked> Embed fonts in file</label>
         <button type="button" class="btn btn-quiet" id="btn-copy-png">Copy image</button>
         <button type="button" class="btn btn-quiet" id="btn-copy-svg">Copy SVG code</button>

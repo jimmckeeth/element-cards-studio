@@ -8,6 +8,7 @@
  */
 
 import { FONT_BY_ID } from './theme.js';
+import { encodeLosslessWebp, webpEncoderSupported } from './webpEncoder.js';
 
 const cssCache = new Map();
 const fileCache = new Map();
@@ -125,14 +126,28 @@ function canvasToBlob(canvas, type, quality) {
 /**
  * Produce a downloadable blob.
  *
- * WebP is requested at quality 1.0, which Chromium-based browsers encode
- * losslessly; the result is verified to actually be a WebP before returning.
+ * WebP does not go through the browser's own encoder: `canvas.toBlob(...,
+ * 'image/webp', 1)` is genuinely lossless (it writes a VP8L chunk and the
+ * pixels round-trip exactly) but compresses so poorly that the result is
+ * routinely 100x larger than necessary — often bigger than the PNG it's
+ * supposedly a smaller alternative to. There's no way to raise the effort
+ * through the Canvas API, so the app carries its own WebP encoder instead
+ * (see webpEncoder.js) and only falls back to the browser's encoder on the
+ * rare browser with no WebAssembly.
  */
 export async function toBlob(svg, format, opts = {}) {
   if (format === 'svg') return new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
   const canvas = await rasterize(svg, opts);
   if (format === 'png') return canvasToBlob(canvas, 'image/png');
   if (format === 'webp') {
+    if (webpEncoderSupported()) {
+      const ctx = canvas.getContext('2d');
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const bytes = await encodeLosslessWebp(imageData);
+      return new Blob([bytes], { type: 'image/webp' });
+    }
+    // No WebAssembly (essentially unreachable in a modern browser): fall
+    // back to the browser's own encoder rather than fail outright.
     const blob = await canvasToBlob(canvas, 'image/webp', 1);
     if (blob.type !== 'image/webp') throw new Error('This browser cannot encode WebP.');
     return blob;
@@ -144,8 +159,10 @@ export async function toBlob(svg, format, opts = {}) {
  * Walk the RIFF chunk list of a WebP file and report whether the pixel data is
  * stored in a VP8L (lossless) chunk rather than VP8 (lossy).
  *
- * Chromium encodes losslessly at quality 1.0, but that is an implementation
- * detail rather than a guarantee, so exports are checked instead of assumed.
+ * The app's own encoder always asks for lossless, so this should always be
+ * true; it exists as a check on that, and on the rare no-WebAssembly
+ * fallback to the browser's own encoder, whose losslessness at quality 1.0
+ * is real but an implementation detail rather than a guarantee.
  */
 export async function isLosslessWebp(blob) {
   const header = new Uint8Array(await blob.slice(0, 12).arrayBuffer());

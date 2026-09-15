@@ -596,7 +596,7 @@ function wireExport() {
     note.textContent = {
       svg: 'Vector and infinitely scalable. Embedding fonts makes the file self-contained but larger; leave it off if the machine opening it already has the fonts.',
       png: 'Lossless raster with an alpha channel. 4× or more is a good starting point for print.',
-      webp: 'Encoded at quality 1.0, which Chromium-based browsers write losslessly. Safari and Firefox may fall back to lossy.',
+      webp: 'Lossless, using a bundled WebP encoder — usually smaller than the PNG. Large exports may take a few seconds.',
     }[formatSel.value];
   };
   formatSel.addEventListener('change', syncFormat);

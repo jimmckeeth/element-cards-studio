@@ -62,10 +62,19 @@ that a font might not carry.
 
 **PNG** is lossless with an alpha channel. Use 4× or more for print.
 
-**WebP** is requested at quality 1.0, which Chromium-based browsers encode losslessly.
-Rather than take that on trust, each exported file's RIFF chunks are inspected: if the
-result is a lossy `VP8 ` chunk instead of a lossless `VP8L` one — as may happen in other
-browsers — the app tells you and points you at PNG.
+**WebP** is genuinely lossless and — unlike the browser's own WebP encoder — actually
+smaller than the PNG. The browser's built-in `canvas.toBlob(..., 'image/webp', 1)` does
+encode losslessly (it writes a real `VP8L` chunk and the pixels round-trip exactly), but
+at such low compression effort that a typical export comes out 100x or more larger than
+necessary, often bigger than the PNG it's meant to be a smaller alternative to — there's
+no way to raise that effort through the Canvas API. So the app carries its own copy of
+`libwebp`, compiled to WebAssembly (`js/vendor/webp-enc/`, from Google's
+[Squoosh](https://github.com/GoogleChromeLabs/squoosh) project), and calls it directly
+with `lossless: 1, exact: 1` in a Worker so a large export doesn't freeze the page. Each
+exported file's RIFF chunks are still inspected afterward as a sanity check — if it ever
+came back as a lossy `VP8 ` chunk instead of `VP8L`, the app would tell you and point you
+at PNG, though in practice that path is now unreachable outside a browser with no
+WebAssembly at all.
 
 Rasterizing an SVG through an `<img>` deliberately does not fetch external resources,
 web fonts included, so before any PNG or WebP is produced the fonts in use are fetched,
@@ -114,6 +123,9 @@ js/theme.js         palettes, paper themes, fonts, layouts, presets, color maths
 js/fields.js        every displayable property and its formatter
 js/render.js        card composition — six layouts over a shared geometry system
 js/export.js        font inlining, rasterizing, WebP verification, downloads
+js/webpEncoder.js   the app-side handle to the WebP encoder Worker
+js/webpWorker.js    runs the vendored libwebp WASM encoder off the main thread
+js/vendor/webp-enc/ vendored libwebp-as-WASM (see the NOTICE there)
 js/app.js           state, controls, the periodic table picker, wiring
 test/run.mjs        dependency-free test suite
 ```
@@ -121,3 +133,8 @@ test/run.mjs        dependency-free test suite
 ## License & Copyright
 
 Copyright © 2026 by Jim McKeeth - [GNU Affero General Public License v3.0](LICENSE.md)
+
+`js/vendor/webp-enc/` carries a vendored copy of Google's `libwebp`, compiled to
+WebAssembly by the Squoosh project (BSD-3-Clause / Apache-2.0 — see the license files
+in that directory), used to encode WebP exports. It is not covered by the AGPL license
+above.

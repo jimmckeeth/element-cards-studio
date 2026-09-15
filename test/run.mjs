@@ -322,6 +322,53 @@ check('markup-unsafe characters in data would be escaped', () => {
   equal(diagrams.esc('<a & "b">'), '&lt;a &amp; &quot;b&quot;&gt;');
 });
 
+/* --------------------------------------------------------------- webp --- */
+
+// The bundled WASM WebP encoder is exercised for real — not mocked — because
+// it's the actual fix for a real bug: the browser's own canvas.toBlob(...,
+// 'image/webp', 1) is lossless but so poorly compressed that it routinely
+// produces files 100x larger than necessary (see js/webpEncoder.js). This
+// guards against the vendored .wasm/.js pairing ever silently going stale.
+try {
+  const { default: createEncoderModule } = await import('../js/vendor/webp-enc/webp_enc.js');
+  const { losslessWebpOptions } = await import('../js/vendor/webp-enc/lossless-options.js');
+  const { readFileSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+
+  const wasmPath = fileURLToPath(new URL('../js/vendor/webp-enc/webp_enc.wasm', import.meta.url));
+  const wasmBinary = readFileSync(wasmPath);
+  const mod = await createEncoderModule({ wasmBinary });
+
+  // A small synthetic RGBA image with flat regions, a sharp edge and partial
+  // transparency — enough to exercise both the color and alpha paths.
+  const w = 6, h = 6;
+  const pixels = new Uint8Array(w * h * 4);
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      const i = (y * w + x) * 4;
+      const edge = x >= w / 2;
+      pixels[i] = edge ? 20 : 235;
+      pixels[i + 1] = edge ? 120 : 90;
+      pixels[i + 2] = edge ? 200 : 40;
+      pixels[i + 3] = y === 0 ? 0 : 255; // a fully transparent top row
+    }
+  }
+
+  const encoded = mod.encode(pixels, w, h, losslessWebpOptions(4));
+  assert(encoded && encoded.length > 0, 'the encoder returned no output');
+
+  // It must actually be a lossless (VP8L) WebP, not a lossy fallback.
+  const tag = (bytes, at) => String.fromCharCode(bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]);
+  assert(tag(encoded, 0) === 'RIFF' && tag(encoded, 8) === 'WEBP', 'output is not a RIFF/WEBP container');
+  assert(tag(encoded, 12) === 'VP8L', `expected a lossless VP8L chunk, got "${tag(encoded, 12)}"`);
+  // Pixel-exact round-tripping (encode -> decode -> compare) is checked
+  // separately against a real browser during development, since no WebP
+  // decoder is vendored here — the app only ever encodes.
+  passed++;
+} catch (err) {
+  failures.push(`vendored WebP encoder produces a lossless VP8L file: ${err.message}`);
+}
+
 /* ------------------------------------------------------------------ report */
 
 console.log(`\n${passed} passed, ${failures.length} failed\n`);

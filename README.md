@@ -14,16 +14,19 @@ No build step, no dependencies, so it deploys to GitHub Pages or runs locally.
 |---|---|
 | **Layouts** | Classic tile, Modern, Study card, Poster, Data sheet, Diagram-first |
 | **Diagrams** | Lewis electron dot, Bohr shell, orbital box (full or valence-only) |
-| **Color** | 9 palettes × 7 paper themes × 6 accent treatments; color by category, block, state or a fixed color |
-| **Type** | 20 typefaces, independent symbol and text fonts, weight, size, letter-spacing |
+| **Color** | 9 palettes × 7 paper themes × 6 accent treatments; color by category, block, state, a fixed color, or two fixed colors as a custom diagonal gradient |
+| **Type** | 21 typefaces, independent symbol and text fonts, weight, symbol size and text size sliders, letter-spacing |
 | **Data** | 20 properties placed in four corner slots and a detail list, in the order you choose |
-| **Frame** | Size, aspect presets, padding, corner radius, border, drop shadow |
+| **Frame** | Size, aspect presets, padding, corner radius, border (including a double-line frame), drop shadow |
 | **Export** | SVG, PNG, and lossless WebP at 1×–8×, with optional transparency |
 
 Twelve curated presets (Classroom, Editorial, Blueprint, Neon lab, Letterpress, Lab sheet,
 Chalkboard, Minimal, Atlas, Orbital focus, Bad Hal, Basic Blue) are starting points rather
 than destinations — they change the look and leave your element and card size alone, and
-every color and corner value stays adjustable afterward.
+every color and corner value stays adjustable afterward. Bad Hal's bold display type is
+[Arimo](https://fonts.google.com/specimen/Arimo), Google's open, metric-compatible
+substitute for Helvetica/Arial — Helvetica itself is a commercial font and not one this
+app bundles or embeds into an export.
 
 Shift-click elements in the table to build a selection, then **export a contact sheet**
 of all of them in one file.

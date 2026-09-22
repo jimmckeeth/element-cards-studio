@@ -96,6 +96,10 @@ export function accentFor(el, cfg) {
 export const FONTS = [
   { id: "system", label: "System UI", stack: "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" },
   { id: "inter", label: "Inter", google: "Inter:wght@300;400;600;800", stack: "'Inter', sans-serif" },
+  // Metric-compatible with Arial/Helvetica -- the open substitute for a
+  // "Helvetica Bold" look without redistributing the (commercial,
+  // non-redistributable) Helvetica font file itself.
+  { id: "arimo", label: "Arimo (Helvetica-style)", google: "Arimo:wght@400;500;600;700", stack: "'Arimo', sans-serif" },
   { id: "outfit", label: "Outfit", google: "Outfit:wght@300;400;600;800", stack: "'Outfit', sans-serif" },
   { id: "worksans", label: "Work Sans", google: "Work+Sans:wght@300;400;600;800", stack: "'Work Sans', sans-serif" },
   { id: "spacegro", label: "Space Grotesk", google: "Space+Grotesk:wght@400;500;700", stack: "'Space Grotesk', sans-serif" },
@@ -182,6 +186,7 @@ export const DEFAULT_CONFIG = {
   accentMode: 'tint',
   colorBy: 'category',
   fixedColor: '#3F7FBF',
+  fixedColor2: '#8AC6FF',
   displayFont: 'inter',
   bodyFont: 'inter',
   symbolWeight: 700,
@@ -208,6 +213,7 @@ export const DEFAULT_CONFIG = {
   uppercaseName: false,
   letterSpacing: 0,
   symbolScale: 1,
+  textScale: 1,
 };
 
 /**
@@ -258,13 +264,21 @@ export const PRESETS = {
     displayFont: 'spacegro', bodyFont: 'spacegro', symbolWeight: 600, diagram: 'orbital',
     fields: ['configShorthand'], radius: 16, borderWidth: 0, borderStyle: 'none', shadow: true } },
   badhal: { name: 'Bad Hal', cfg: {
-    layout: 'classic', theme: 'paper', accentMode: 'solid', colorBy: 'fixed', fixedColor: '#1B8A46',
-    displayFont: 'archivo', bodyFont: 'worksans', symbolWeight: 800, diagram: 'none',
-    fields: [], cornerBottomLeft: 'none', cornerBottomRight: 'none',
+    // Dark-teal-to-bright-green diagonal, the two brand colors from the
+    // supplied reference; Arimo is the open, metric-compatible stand-in for
+    // Helvetica Bold (Helvetica itself is a commercial font, not one this
+    // app can bundle or embed into an export).
+    layout: 'classic', theme: 'paper', accentMode: 'gradient',
+    colorBy: 'fixed', fixedColor: '#15453D', fixedColor2: '#006C24',
+    displayFont: 'arimo', bodyFont: 'arimo', symbolWeight: 700,
+    symbolScale: 1.8, textScale: 1.85, letterSpacing: -6, padding: 16,
+    diagram: 'none', fields: [], showName: false,
+    cornerTopRight: 'none', cornerBottomLeft: 'none', cornerBottomRight: 'none',
     radius: 14, borderWidth: 9, borderStyle: 'ink', shadow: false } },
   basicblue: { name: 'Basic Blue', cfg: {
     layout: 'classic', theme: 'paper', accentMode: 'solid', colorBy: 'fixed', fixedColor: '#3B5C78',
     displayFont: 'worksans', bodyFont: 'worksans', symbolWeight: 800, diagram: 'none',
+    textScale: 1.15,
     fields: ['configShorthand'], cornerBottomLeft: 'category', cornerBottomRight: 'none',
     radius: 20, borderWidth: 6, borderStyle: 'double', shadow: false } },
 };

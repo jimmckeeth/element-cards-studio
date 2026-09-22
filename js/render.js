@@ -21,6 +21,18 @@ const esc = diagrams.esc;
 const n = (v) => Math.round(v * 100) / 100;
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
+/**
+ * A responsive secondary-text size: `ratio` of `base`, scaled by the user's
+ * text-size control, clamped to a [min,max] range that itself scales with
+ * that control — otherwise a fixed clamp would cap out the slider's effect.
+ * Never applied to the main symbol, which has its own dedicated
+ * `symbolScale` so the two remain independently adjustable.
+ */
+function scaledSize(base, ratio, min, max, cfg) {
+  const scale = cfg.textScale ?? 1;
+  return clamp(base * ratio * scale, min * scale, max * scale);
+}
+
 /* ------------------------------------------------------------------ text -- */
 
 /** Fallback metrics for environments without a canvas (unit tests, SSR). */
@@ -144,14 +156,29 @@ export function paletteFor(el, cfg) {
     rule = mix(rule, accent, 0.4);
   }
 
-  const onBg = cfg.accentMode === 'solid' ? ink : ensureContrast(accent, bg, 3.2);
+  // A fixed color paired with a second one is a deliberate two-color brand
+  // gradient (e.g. Bad Hal's dark-to-bright green) — draw exactly those two
+  // colors rather than washing them through the paper theme's background,
+  // which is right for a category-colored card but flattens a chosen pair.
+  const customGradient = cfg.accentMode === 'gradient' && cfg.colorBy === 'fixed' && cfg.fixedColor2;
+  if (customGradient) {
+    bg = mix(cfg.fixedColor, cfg.fixedColor2, 0.5);
+    // Recompute ink the way 'solid' mode does: the paper theme's own ink
+    // (chosen for a light or dark *paper*) is not necessarily readable
+    // against two arbitrary custom colors mixed together.
+    ink = readableInk(bg);
+    muted = mix(ink, bg, 0.34);
+    rule = mix(ink, bg, 0.62);
+  }
+
+  const onBg = cfg.accentMode === 'solid' || customGradient ? ink : ensureContrast(accent, bg, 3.2);
   return {
     theme, accent, bg, ink, muted, rule,
     accentInk: onBg,
     // Diagrams read best when their strokes track the accent but stay legible.
-    diagramAccent: cfg.accentMode === 'solid' ? ink : ensureContrast(accent, bg, 3.0),
-    gradFrom: mix(bg, shade(accent, theme.dark ? 0.12 : -0.12), 0.55),
-    gradTo: mix(bg, shade(accent, theme.dark ? -0.2 : 0.25), 0.55),
+    diagramAccent: cfg.accentMode === 'solid' || customGradient ? ink : ensureContrast(accent, bg, 3.0),
+    gradFrom: customGradient ? cfg.fixedColor : mix(bg, shade(accent, theme.dark ? 0.12 : -0.12), 0.55),
+    gradTo: customGradient ? cfg.fixedColor2 : mix(bg, shade(accent, theme.dark ? -0.2 : 0.25), 0.55),
   };
 }
 
@@ -237,7 +264,7 @@ const LAYOUT_FNS = {};
 LAYOUT_FNS.classic = (ctx) => {
   const { el, cfg, pal, fonts, box } = ctx;
   const parts = [];
-  const cornerSize = clamp(box.w * 0.055, 10, 19);
+  const cornerSize = scaledSize(box.w, 0.055, 10, 19, cfg);
   let topReserve = 0;
   let bottomReserve = 0;
 
@@ -287,8 +314,8 @@ LAYOUT_FNS.classic = (ctx) => {
 
   const symbolSize = fitSize(el.sym, box.w * 0.46 * cfg.symbolScale, box.w * 0.92, fonts.display, cfg.symbolWeight);
   const sm = canvasMeasure(el.sym, symbolSize, fonts.display, cfg.symbolWeight);
-  const nameSize = clamp(box.w * 0.085, 11, 28);
-  const detailSize = clamp(box.w * 0.052, 9, 16);
+  const nameSize = scaledSize(box.w, 0.085, 11, 28, cfg);
+  const detailSize = scaledSize(box.w, 0.052, 9, 16, cfg);
   const cx = box.x + box.w / 2;
 
   const diagramH = cfg.diagram === 'none' ? 0 : clamp(region.h * 0.3 * cfg.diagramScale, 0, region.h * 0.46);
@@ -317,7 +344,7 @@ LAYOUT_FNS.classic = (ctx) => {
 LAYOUT_FNS.modern = (ctx) => {
   const { el, cfg, pal, fonts, box } = ctx;
   const parts = [];
-  const microSize = clamp(box.w * 0.042, 8.5, 14);
+  const microSize = scaledSize(box.w, 0.042, 8.5, 14, cfg);
   const cat = CATEGORIES[el.cat].label.toUpperCase();
 
   const catM = canvasMeasure(cat, microSize, fonts.body, 600);
@@ -333,7 +360,7 @@ LAYOUT_FNS.modern = (ctx) => {
 
   const footY = box.y + box.h;
   const details = detailLines(el, cfg, { exclude: ['name'] });
-  const detailSize = clamp(box.w * 0.05, 9, 15);
+  const detailSize = scaledSize(box.w, 0.05, 9, 15, cfg);
   const footH = details.length ? details.length * detailSize * 1.5 : 0;
 
   const region = { x: box.x, y: ruleY + box.h * 0.06, w: box.w, h: footY - footH - (ruleY + box.h * 0.1) };
@@ -344,7 +371,7 @@ LAYOUT_FNS.modern = (ctx) => {
 
   const symbolSize = fitSize(el.sym, region.h * 0.62 * cfg.symbolScale, typeW, fonts.display, cfg.symbolWeight);
   const sm = canvasMeasure(el.sym, symbolSize, fonts.display, cfg.symbolWeight);
-  const nameSize = clamp(box.w * 0.08, 11, 26);
+  const nameSize = scaledSize(box.w, 0.08, 11, 26, cfg);
   const name = cfg.showName ? elementName(el, cfg) : null;
 
   const typeBlocks = [
@@ -374,21 +401,21 @@ LAYOUT_FNS.study = (ctx) => {
   const { el, cfg, pal, fonts, box } = ctx;
   const parts = [];
   const details = detailLines(el, cfg, { exclude: ['name', 'mass'] });
-  const rowSize = clamp(box.w * 0.046, 8.5, 14);
+  const rowSize = scaledSize(box.w, 0.046, 8.5, 14, cfg);
   const rowH = rowSize * 1.9;
   const tableH = details.length ? details.length * rowH + rowSize : 0;
 
   const top = { x: box.x, y: box.y, w: box.w, h: box.h - tableH };
   const leftW = top.w * (cfg.diagram === 'none' ? 1 : 0.46);
 
-  const zSize = clamp(box.w * 0.05, 9, 16);
+  const zSize = scaledSize(box.w, 0.05, 9, 16, cfg);
   parts.push(text(String(el.z), box.x, box.y + zSize, { family: fonts.body, size: zSize, weight: 700, fill: pal.accentInk }));
 
   const name = cfg.showName ? elementName(el, cfg) : null;
   const symbolSize = fitSize(el.sym, top.h * 0.5 * cfg.symbolScale, leftW * 0.96, fonts.display, cfg.symbolWeight);
   const sm = canvasMeasure(el.sym, symbolSize, fonts.display, cfg.symbolWeight);
-  const nameSize = clamp(box.w * 0.062, 10, 22);
-  const massSize = clamp(box.w * 0.045, 8.5, 14);
+  const nameSize = scaledSize(box.w, 0.062, 10, 22, cfg);
+  const massSize = scaledSize(box.w, 0.045, 8.5, 14, cfg);
 
   const leftBlocks = [
     { h: sm.ascent + sm.descent, draw: (y) => text(el.sym, box.x + leftW / 2, y + sm.ascent, {
@@ -440,7 +467,7 @@ LAYOUT_FNS.poster = (ctx) => {
     parts.push(`<g opacity="0.95">${placeDiagram(d, dbox, { align: 'right' }).markup}</g>`);
   }
 
-  const zSize = clamp(box.w * 0.075, 12, 30);
+  const zSize = scaledSize(box.w, 0.075, 12, 30, cfg);
   parts.push(text(String(el.z), box.x, box.y + zSize, { family: fonts.display, size: zSize, weight: 700, fill: pal.accentInk }));
   parts.push(text(CATEGORIES[el.cat].label.toUpperCase(), box.x, box.y + zSize * 1.9, {
     family: fonts.body, size: zSize * 0.4, weight: 600, fill: pal.muted, spacing: zSize * 0.05,
@@ -448,7 +475,7 @@ LAYOUT_FNS.poster = (ctx) => {
 
   const nameSize = fitSize(elementName(el, cfg), box.w * 0.155, box.w, fonts.display, 700);
   const name = cfg.showName ? elementName(el, cfg) : el.sym;
-  const detailSize = clamp(box.w * 0.048, 9, 15);
+  const detailSize = scaledSize(box.w, 0.048, 9, 15, cfg);
   const detailH = details.length * detailSize * 1.55;
   parts.push(text(name, box.x, box.y + box.h - detailH - detailSize * 0.9, {
     family: fonts.display, size: nameSize, weight: 700, fill: pal.ink, spacing: cfg.letterSpacing,
@@ -477,7 +504,7 @@ LAYOUT_FNS.data = (ctx) => {
     family: fonts.display, size: symbolSize, weight: cfg.symbolWeight, fill: pal.ink, spacing: cfg.letterSpacing }));
 
   const symW = canvasMeasure(el.sym, symbolSize, fonts.display, cfg.symbolWeight).width;
-  const metaSize = clamp(box.w * 0.048, 9, 15);
+  const metaSize = scaledSize(box.w, 0.048, 9, 15, cfg);
   const metaX = box.x + symW + box.w * 0.035;
   parts.push(text(String(el.z), metaX, symBaseline - metaSize * 2.4, { family: fonts.body, size: metaSize, weight: 700, fill: pal.accentInk }));
   if (cfg.showName) {
@@ -498,7 +525,7 @@ LAYOUT_FNS.data = (ctx) => {
 
   const avail = box.h - headerH;
   const rowH = details.length ? Math.min(avail / details.length, box.h * 0.1) : 0;
-  const rowSize = clamp(rowH * 0.42, 7.5, 15);
+  const rowSize = scaledSize(rowH, 0.42, 7.5, 15, cfg);
   details.forEach((f, i) => {
     const y = tableY + rowH * (i + 1) - rowH * 0.32;
     if (i) parts.push(`<line x1="${n(box.x)}" y1="${n(tableY + rowH * i)}" x2="${n(box.x + box.w)}" y2="${n(tableY + rowH * i)}" stroke="${pal.rule}" stroke-width="0.8"/>`);
@@ -515,8 +542,8 @@ LAYOUT_FNS.diagram = (ctx) => {
   const { el, cfg, pal, fonts, box } = ctx;
   const parts = [];
   const details = detailLines(el, cfg, { exclude: ['name'] });
-  const capSize = clamp(box.w * 0.07, 11, 26);
-  const subSize = clamp(box.w * 0.046, 8.5, 14);
+  const capSize = scaledSize(box.w, 0.07, 11, 26, cfg);
+  const subSize = scaledSize(box.w, 0.046, 8.5, 14, cfg);
   const captionH = capSize * 1.2 + (details.length ? subSize * 1.5 : 0);
 
   if (cfg.diagram !== 'none') {

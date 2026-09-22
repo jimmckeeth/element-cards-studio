@@ -160,7 +160,7 @@ function range(key, { min, max, step = 1, format = (v) => v }) {
 const rangeLabels = {
   width: 'Width', height: 'Height', padding: 'Padding', radius: 'Corner radius',
   borderWidth: 'Border width', symbolScale: 'Symbol size', letterSpacing: 'Letter spacing',
-  diagramScale: 'Diagram size', symbolWeight: 'Symbol weight',
+  diagramScale: 'Diagram size', symbolWeight: 'Symbol weight', textScale: 'Text size',
 };
 
 function toggle(key, labelText, { disabled = false } = {}) {
@@ -281,9 +281,10 @@ function buildControls() {
     range('radius', { min: 0, max: 120, format: (v) => `${v} px` }),
   ]));
 
+  const customGradient = config.colorBy === 'fixed' && config.accentMode === 'gradient';
   host.append(group('Color', true, [
     field('Color by', select('colorBy', Object.entries(COLOR_BY), () => {
-      buildControls();   // the fixed-color picker appears or disappears
+      buildControls();   // the fixed-color picker(s) appear or disappear
       update();
     })),
     (() => {
@@ -298,11 +299,24 @@ function buildControls() {
             config.fixedColor = input.value;
             update();
           });
-          return field('Card color', input);
+          return field(customGradient ? 'First color' : 'Card color', input);
+        })()
+      : null,
+    customGradient
+      ? (() => {
+          const input = el('input', { type: 'color', value: config.fixedColor2, id: 'ctl-fixedColor2' });
+          input.addEventListener('input', () => {
+            config.fixedColor2 = input.value;
+            update();
+          });
+          return field('Second color', input, 'The two colors blend diagonally across the card.');
         })()
       : null,
     field('Paper', select('theme', Object.entries(THEMES).map(([id, t]) => [id, t.name]))),
-    field('Accent treatment', select('accentMode', Object.entries(ACCENT_MODES))),
+    field('Accent treatment', select('accentMode', Object.entries(ACCENT_MODES), () => {
+      buildControls();   // the second color picker appears or disappears
+      update();
+    })),
   ]));
 
   host.append(group('Typography', false, [
@@ -310,7 +324,9 @@ function buildControls() {
     field('Text font', select('bodyFont', FONTS.map((f) => [f.id, f.label]))),
     field('Symbol weight', select('symbolWeight', [[300, 'Light'], [400, 'Regular'], [500, 'Medium'], [600, 'Semibold'], [700, 'Bold'], [800, 'Extra bold']])),
     range('symbolScale', { min: 0.5, max: 1.6, step: 0.05, format: (v) => `${Math.round(v * 100)}%` }),
-    range('letterSpacing', { min: -4, max: 14, step: 0.5, format: (v) => `${v} px` }),
+    range('textScale', { min: 0.5, max: 2, step: 0.05, format: (v) => `${Math.round(v * 100)}%` }),
+    el('p', { class: 'field-hint', text: 'Scales the name, corner and detail text — the symbol has its own size above.' }),
+    range('letterSpacing', { min: -16, max: 14, step: 0.5, format: (v) => `${v} px` }),
     toggle('uppercaseName', 'Set the element name in capitals'),
     toggle('usSpelling', 'US spellings (aluminum, cesium, sulfur)'),
   ]));

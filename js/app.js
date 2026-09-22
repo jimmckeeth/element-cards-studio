@@ -355,7 +355,7 @@ function buildControls() {
 
   host.append(group('Frame', false, [
     range('borderWidth', { min: 0, max: 16, format: (v) => `${v} px` }),
-    field('Border color', select('borderStyle', [['accent', 'Element color'], ['ink', 'Text color'], ['rule', 'Hairline'], ['none', 'No border']])),
+    field('Border color', select('borderStyle', [['accent', 'Element color'], ['ink', 'Text color'], ['rule', 'Hairline'], ['double', 'Double line'], ['none', 'No border']])),
     toggle('shadow', 'Drop shadow'),
   ]));
 

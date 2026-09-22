@@ -242,26 +242,36 @@ LAYOUT_FNS.classic = (ctx) => {
   let bottomReserve = 0;
 
   if (cfg.showCorners) {
-    const corners = [
-      ['cornerTopLeft', box.x, box.y, 'start', 1.3, 700],
-      ['cornerTopRight', box.x + box.w, box.y, 'end', 1, 400],
-      ['cornerBottomLeft', box.x, box.y + box.h, 'start', 1, 400],
-      ['cornerBottomRight', box.x + box.w, box.y + box.h, 'end', 1, 400],
+    // Each row is handled as a pair rather than four independent slots: when
+    // only one side of a row has content, it reads far better centered as a
+    // single banner (think a category label spanning the bottom) than stuck
+    // out at one edge with nothing to balance it.
+    const rows = [
+      { leftKey: 'cornerTopLeft', rightKey: 'cornerTopRight', top: true },
+      { leftKey: 'cornerBottomLeft', rightKey: 'cornerBottomRight', top: false },
     ];
-    for (const [key, x, yEdge, anchor, scale, weight] of corners) {
-      const f = resolve(cfg[key], el, cfg);
-      if (!f) continue;
-      const size = cornerSize * scale;
-      const top = yEdge === box.y;
-      const m = canvasMeasure(f.value, size, fonts.body, weight);
-      const y = top ? box.y + m.ascent : box.y + box.h;
-      const value = truncate(f.value, size, box.w * 0.5, fonts.body, weight);
-      parts.push(text(value, x, y, {
-        family: fonts.body, size, weight, anchor,
-        fill: key === 'cornerTopLeft' ? pal.accentInk : pal.muted,
-      }));
-      if (top) topReserve = Math.max(topReserve, m.ascent + m.descent);
-      else bottomReserve = Math.max(bottomReserve, m.ascent + m.descent);
+    for (const { leftKey, rightKey, top } of rows) {
+      const lf = resolve(cfg[leftKey], el, cfg);
+      const rf = resolve(cfg[rightKey], el, cfg);
+      const slots = lf && rf
+        ? [[leftKey, lf, box.x, 'start', top ? 1.3 : 1, top ? 700 : 400],
+           [rightKey, rf, box.x + box.w, 'end', 1, 400]]
+        : (lf || rf)
+          ? [[lf ? leftKey : rightKey, lf || rf, box.x + box.w / 2, 'middle', top ? 1.3 : 1, top ? 700 : 400]]
+          : [];
+      for (const [key, f, x, anchor, scale, weight] of slots) {
+        const size = cornerSize * scale;
+        const m = canvasMeasure(f.value, size, fonts.body, weight);
+        const y = top ? box.y + m.ascent : box.y + box.h;
+        const maxW = box.w * (anchor === 'middle' ? 0.88 : 0.5);
+        const value = truncate(f.value, size, maxW, fonts.body, weight);
+        parts.push(text(value, x, y, {
+          family: fonts.body, size, weight, anchor,
+          fill: key === 'cornerTopLeft' ? pal.accentInk : pal.muted,
+        }));
+        if (top) topReserve = Math.max(topReserve, m.ascent + m.descent);
+        else bottomReserve = Math.max(bottomReserve, m.ascent + m.descent);
+      }
     }
   }
 
@@ -576,12 +586,28 @@ function background(cfg, pal, card, uid) {
   }
 
   if (cfg.borderWidth > 0 && cfg.borderStyle !== 'none') {
-    const stroke = cfg.borderStyle === 'accent' ? pal.accent : cfg.borderStyle === 'ink' ? pal.ink : pal.rule;
     const bw = cfg.borderWidth;
-    parts.push(
-      `<rect x="${n(card.x + bw / 2)}" y="${n(card.y + bw / 2)}" width="${n(card.w - bw)}" height="${n(card.h - bw)}" ` +
-      `rx="${n(Math.max(0, r - bw / 2))}" fill="none" stroke="${stroke}" stroke-width="${n(bw)}"/>`,
-    );
+    if (cfg.borderStyle === 'double') {
+      // A thin line near the edge, a gap of the card's own background, then
+      // a thicker inner line — the "picture frame" look of a badge tile.
+      // Always ink-colored: on a solid-fill card that's already the readable
+      // white/black the background picked, so it reads as intended without
+      // the user first having to notice a separate "ink" border option.
+      const outerW = Math.max(1.5, bw * 0.3);
+      const gap = Math.max(4, Math.min(card.w, card.h) * 0.022);
+      const inset1 = outerW / 2;
+      const inset2 = outerW + gap + bw / 2;
+      const ring = (inset, width) =>
+        `<rect x="${n(card.x + inset)}" y="${n(card.y + inset)}" width="${n(card.w - inset * 2)}" height="${n(card.h - inset * 2)}" ` +
+        `rx="${n(Math.max(0, r - inset))}" fill="none" stroke="${pal.ink}" stroke-width="${n(width)}"/>`;
+      parts.push(ring(inset1, outerW) + ring(inset2, bw));
+    } else {
+      const stroke = cfg.borderStyle === 'accent' ? pal.accent : cfg.borderStyle === 'ink' ? pal.ink : pal.rule;
+      parts.push(
+        `<rect x="${n(card.x + bw / 2)}" y="${n(card.y + bw / 2)}" width="${n(card.w - bw)}" height="${n(card.h - bw)}" ` +
+        `rx="${n(Math.max(0, r - bw / 2))}" fill="none" stroke="${stroke}" stroke-width="${n(bw)}"/>`,
+      );
+    }
   }
 
   return { defs: defs.join(''), parts: parts.join('') };

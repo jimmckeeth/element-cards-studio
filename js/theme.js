@@ -257,4 +257,14 @@ export const PRESETS = {
     layout: 'diagram', theme: 'slate', accentMode: 'solid', palette: 'ocean',
     displayFont: 'spacegro', bodyFont: 'spacegro', symbolWeight: 600, diagram: 'orbital',
     fields: ['configShorthand'], radius: 16, borderWidth: 0, borderStyle: 'none', shadow: true } },
+  badhal: { name: 'Bad Hal', cfg: {
+    layout: 'classic', theme: 'paper', accentMode: 'solid', colorBy: 'fixed', fixedColor: '#1B8A46',
+    displayFont: 'archivo', bodyFont: 'worksans', symbolWeight: 800, diagram: 'none',
+    fields: [], cornerBottomLeft: 'none', cornerBottomRight: 'none',
+    radius: 14, borderWidth: 9, borderStyle: 'ink', shadow: false } },
+  basicblue: { name: 'Basic Blue', cfg: {
+    layout: 'classic', theme: 'paper', accentMode: 'solid', colorBy: 'fixed', fixedColor: '#3B5C78',
+    displayFont: 'worksans', bodyFont: 'worksans', symbolWeight: 800, diagram: 'none',
+    fields: ['configShorthand'], cornerBottomLeft: 'category', cornerBottomRight: 'none',
+    radius: 20, borderWidth: 6, borderStyle: 'double', shadow: false } },
 };

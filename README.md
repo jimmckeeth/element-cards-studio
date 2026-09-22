@@ -20,9 +20,10 @@ No build step, no dependencies, so it deploys to GitHub Pages or runs locally.
 | **Frame** | Size, aspect presets, padding, corner radius, border, drop shadow |
 | **Export** | SVG, PNG, and lossless WebP at 1×–8×, with optional transparency |
 
-Ten curated presets (Classroom, Editorial, Blueprint, Neon lab, Letterpress, Lab sheet,
-Chalkboard, Minimal, Atlas, Orbital focus) are starting points rather than destinations —
-they change the look and leave your element and card size alone.
+Twelve curated presets (Classroom, Editorial, Blueprint, Neon lab, Letterpress, Lab sheet,
+Chalkboard, Minimal, Atlas, Orbital focus, Bad Hal, Basic Blue) are starting points rather
+than destinations — they change the look and leave your element and card size alone, and
+every color and corner value stays adjustable afterward.
 
 Shift-click elements in the table to build a selection, then **export a contact sheet**
 of all of them in one file.
